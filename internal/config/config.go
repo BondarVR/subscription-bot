@@ -7,13 +7,21 @@ import (
 
 type Config struct {
 	TelegramToken string `env:"TELEGRAM_TOKEN"`
-	LogServer     string `env:"LOG_SERVER"`
-	Loglevel      string `env:"LOG_LEVEL"`
-	ServiceName   string `env:"SERVICE_NAME"`
 	ApiWeather    string `env:"API_WEATHER"`
+
+	LogServer   string `env:"LOG_SERVER"`
+	Loglevel    string `env:"LOG_LEVEL"`
+	ServiceName string `env:"SERVICE_NAME"`
+
+	ServerHost string `env:"SERVER_HOST" envDefault:"localhost"`
+	ServerPort string `env:"SERVER_PORT" envDefault:"8000"`
+
+	MongoHost     string `env:"MONGO_HOST" envDefault:"localhost"`
+	MongoPort     string `env:"MONGO_PORT" envDefault:"8010"`
 	MongoUser     string `env:"MONGO_USER"`
+	NameDatabase  string `env:"MONGO_DB"`
 	MongoPassword string `env:"MONGO_PASSWORD"`
-	DbName        string `env:"DB_NAME"`
+
 	DbCollections string `env:"DB_COLLECTIONS"`
 }
 

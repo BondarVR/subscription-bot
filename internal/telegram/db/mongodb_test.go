@@ -9,12 +9,13 @@ import (
 	"testing"
 )
 
+var testCtx = context.Background()
+
 func TestCreate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.Background()
-	in := telegram.User{
+	testUse := telegram.User{
 		ChatID: 1,
 		Lon:    35,
 		Lat:    46,
@@ -28,8 +29,8 @@ func TestCreate(t *testing.T) {
 
 	repo := mock_telegram.NewMockStorage(ctrl)
 
-	repo.EXPECT().Create(ctx, in).Return(mockResult, nil).Times(1)
-	create, err := repo.Create(ctx, in)
+	repo.EXPECT().Create(testCtx, testUse).Return(mockResult, nil).Times(1)
+	create, err := repo.Create(testCtx, testUse)
 	require.NoError(t, err)
 	require.Equal(t, mockResult, create)
 }
@@ -38,8 +39,7 @@ func TestFindOneByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.Background()
-	in := int64(25)
+	testUse := int64(25)
 	mockResult := telegram.User{
 		ChatID: 25,
 		Lon:    2345,
@@ -52,8 +52,8 @@ func TestFindOneByID(t *testing.T) {
 	}
 
 	repo := mock_telegram.NewMockStorage(ctrl)
-	repo.EXPECT().FindOneByID(ctx, in).Return(mockResult, nil).Times(1)
-	user, err := repo.FindOneByID(ctx, in)
+	repo.EXPECT().FindOneByID(testCtx, testUse).Return(mockResult, nil).Times(1)
+	user, err := repo.FindOneByID(testCtx, testUse)
 	require.NoError(t, err)
 	require.Equal(t, mockResult, user)
 }
@@ -62,8 +62,7 @@ func TestFindOneByTime(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.Background()
-	in := telegram.Time{
+	testUse := telegram.Time{
 		Hour:    "19",
 		Minutes: "11",
 		Second:  "01",
@@ -80,8 +79,8 @@ func TestFindOneByTime(t *testing.T) {
 	}
 
 	repo := mock_telegram.NewMockStorage(ctrl)
-	repo.EXPECT().FindOneByTime(ctx, in).Return(mockResult, nil).Times(1)
-	user, err := repo.FindOneByTime(ctx, in)
+	repo.EXPECT().FindOneByTime(testCtx, testUse).Return(mockResult, nil).Times(1)
+	user, err := repo.FindOneByTime(testCtx, testUse)
 	require.NoError(t, err)
 	require.Equal(t, mockResult, user)
 }

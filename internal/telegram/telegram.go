@@ -14,19 +14,18 @@ type Bot struct {
 	cfg     *config.Config
 	lgr     *logger.LogrusLogger
 	storage Storage
+	wg      sync.WaitGroup
 }
 
-var wg = sync.WaitGroup{}
-
-func NewBot(bot *tgbotapi.BotAPI, cfg *config.Config, lgr *logger.LogrusLogger, storage Storage) *Bot {
-	return &Bot{bot: bot, cfg: cfg, lgr: lgr, storage: storage}
+func NewBot(bot *tgbotapi.BotAPI, cfg *config.Config, lgr *logger.LogrusLogger, storage Storage, wg sync.WaitGroup) *Bot {
+	return &Bot{bot: bot, cfg: cfg, lgr: lgr, storage: storage, wg: wg}
 }
 
 func (b *Bot) StartBotAndTicker() error {
 	b.lgr.Infof("Authorized on account %s", b.bot.Self.UserName)
-	wg.Add(1)
+	b.wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer b.wg.Done()
 		ticker := time.NewTicker(45 * time.Second)
 		for _ = range ticker.C {
 			b.lgr.Infof("tick...")
@@ -48,7 +47,7 @@ func (b *Bot) StartBotAndTicker() error {
 	if err := b.handleUpdate(updates); err != nil {
 		return err
 	}
-	wg.Wait()
+	b.wg.Wait()
 	return nil
 }
 

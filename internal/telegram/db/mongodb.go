@@ -14,6 +14,13 @@ type db struct {
 	lgr         *logger.LogrusLogger
 }
 
+func NewStorage(database *mongo.Database, collection string, lgr *logger.LogrusLogger) telegram.Storage {
+	return &db{
+		collections: database.Collection(collection),
+		lgr:         lgr,
+	}
+}
+
 func (d *db) Create(ctx context.Context, user telegram.User) (string, error) {
 	result, err := d.collections.InsertOne(ctx, user)
 	if err != nil {
@@ -86,11 +93,4 @@ func (d *db) Update(ctx context.Context, user telegram.User) error {
 	}
 
 	return nil
-}
-
-func NewStorage(database *mongo.Database, collection string, lgr *logger.LogrusLogger) telegram.Storage {
-	return &db{
-		collections: database.Collection(collection),
-		lgr:         lgr,
-	}
 }
