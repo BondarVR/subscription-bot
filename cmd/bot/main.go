@@ -44,7 +44,7 @@ func main() {
 	}
 	lgr.Infof("DB is start. Name: (%s)", client.Name())
 
-	storage := db.NewStorage(client, cfg.DbCollections)
+	storage := db.NewStorage(client, cfg.DbCollections, lgr)
 
 	bot, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {

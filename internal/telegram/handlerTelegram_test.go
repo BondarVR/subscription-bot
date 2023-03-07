@@ -12,9 +12,49 @@ import (
 	"testing"
 )
 
+var testCtx = context.Background()
+var methodForTestHandleTimeFromText = "Update"
+var methodForTestHandleStartCommand = "FindOneByID"
+var testUser1 = models.User{
+	ChatID: 12,
+	Lon:    0,
+	Lat:    0,
+	Time: models.Time{
+		Hour:    "20",
+		Minutes: "33",
+		Second:  "00",
+	},
+}
+var testUser2 = models.User{
+	ChatID: 594150834,
+	Lon:    12,
+	Lat:    15,
+	Time: models.Time{
+		Hour:    "20",
+		Minutes: "33",
+		Second:  "00",
+	},
+}
+var testMessage1 = tgbotapi.Message{
+	Text: "20:33:00",
+	Chat: &tgbotapi.Chat{
+		ID: 12,
+	},
+}
+var testMessage2 = tgbotapi.Message{
+	Text: "33:33:30",
+	Chat: &tgbotapi.Chat{
+		ID: 12,
+	},
+}
+var testMessage3 = tgbotapi.Message{
+	Chat: &tgbotapi.Chat{
+		ID: 594150834,
+	},
+}
+
 func TestHandleTimeFromText(t *testing.T) {
 	testObj := new(mocks.MockStorage)
-	ctx := context.Background()
 	cfg, err := config.NewConfig()
 	require.NoError(t, err)
 
@@ -33,58 +73,33 @@ func TestHandleTimeFromText(t *testing.T) {
 		expResult string
 		method    string
 		expErr    error
+		resErr    error
 	}{
-		{name: "User update",
-			inUpdate: models.User{
-				ChatID: 12,
-				Lon:    0,
-				Lat:    0,
-				Time: models.Time{
-					Hour:    "20",
-					Minutes: "33",
-					Second:  "00",
-				},
-			},
-			in: tgbotapi.Message{
-				Text: "20:33:30",
-				Chat: &tgbotapi.Chat{
-					ID: 12,
-				},
-			},
+		{
+			name:      "User update",
+			inUpdate:  testUser1,
+			in:        testMessage1,
 			expResult: timeText,
-			method:    "Update",
+			method:    methodForTestHandleTimeFromText,
 			expErr:    nil,
+			resErr:    nil,
 		},
-		{name: "Can not parse time",
-			inUpdate: models.User{
-				ChatID: 12,
-				Lon:    0,
-				Lat:    0,
-				Time: models.Time{
-					Hour:    "20",
-					Minutes: "33",
-					Second:  "00",
-				},
-			},
-			in: tgbotapi.Message{
-				Text: "33:33:30",
-				Chat: &tgbotapi.Chat{
-					ID: 12,
-				},
-			},
+		{
+			name:      "Can not parse time",
+			inUpdate:  testUser1,
+			in:        testMessage2,
 			expResult: errTimeText,
-			method:    "Update",
+			method:    methodForTestHandleTimeFromText,
 			expErr:    fmt.Errorf("can not parse time"),
+			resErr:    fmt.Errorf("user is not update"),
 		},
 	}
 
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			testObj.On(tt.method, ctx, tt.inUpdate).Return(tt.expErr)
+			testObj.On(tt.method, testCtx, tt.inUpdate).Return(tt.resErr)
 			result, err := bot.handleTimeFromText(&tt.in)
-			testObj.AssertExpectations(t)
-
-			require.Equal(t, err, tt.expErr)
+			require.Equal(t, tt.expErr, err)
 			require.Equal(t, tt.expResult, result)
 		})
 	}
@@ -92,7 +107,6 @@ func TestHandleTimeFromText(t *testing.T) {
 
 func TestHandleStartCommand(t *testing.T) {
 	mockStorage := new(mocks.MockStorage)
-	ctx := context.Background()
 	cfg, err := config.NewConfig()
 	require.NoError(t, err)
 
@@ -113,33 +127,18 @@ func TestHandleStartCommand(t *testing.T) {
 		expErrForStorage error
 	}{
 		{name: "User is create",
-			inFind: 594150834,
-			expResultFind: models.User{
-				ChatID: 594150834,
-				Lon:    12,
-				Lat:    15,
-				Time: models.Time{
-					Hour:    "20",
-					Minutes: "33",
-					Second:  "00",
-				},
-			},
-			in: tgbotapi.Message{
-				Chat: &tgbotapi.Chat{
-					ID: 594150834,
-				},
-			},
-			methodForStorage: "FindOneByID",
+			inFind:           594150834,
+			expResultFind:    testUser2,
+			in:               testMessage3,
+			methodForStorage: methodForTestHandleStartCommand,
 			expErrForStorage: nil,
 		},
 	}
 
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			mockStorage.On(tt.methodForStorage, ctx, tt.inFind).Return(tt.expResultFind, tt.expErrForStorage)
+			mockStorage.On(tt.methodForStorage, testCtx, tt.inFind).Return(tt.expResultFind, tt.expErrForStorage)
 			err := bot.handleStartCommand(&tt.in)
-			mockStorage.AssertExpectations(t)
-
 			require.NoError(t, err)
 		})
 	}

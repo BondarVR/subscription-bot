@@ -31,7 +31,7 @@ const (
 		"Налаштування закінчено. \n\n" +
 		"Тепер Вам щоденно будуть приходити сповіщення про погоду у вибраний час.\n\n" +
 		"Хай щастить!"
-	layout = "15:04:05"
+	layoutOfTime = "15:04:05"
 )
 
 func (b *Bot) handleText(message *tgbotapi.Message) error {
@@ -121,7 +121,7 @@ func (b *Bot) handleLocation(message *tgbotapi.Message) error {
 }
 
 func (b *Bot) handleTimeFromText(message *tgbotapi.Message) (string, error) {
-	_, err := time.Parse(layout, message.Text)
+	_, err := time.Parse(layoutOfTime, message.Text)
 	if err != nil {
 		return errTimeText, fmt.Errorf("can not parse time")
 	} else {

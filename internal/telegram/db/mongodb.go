@@ -11,14 +11,21 @@ import (
 	"subscription-bot/internal/telegram"
 )
 
+const (
+	chatId = "chat_id"
+	lon    = "lon"
+	lat    = "lat"
+)
+
 type db struct {
 	collections *mongo.Collection
 	lgr         *logger.LogrusLogger
 }
 
-func NewStorage(database *mongo.Database, collection string) telegram.Storage {
+func NewStorage(database *mongo.Database, collection string, lgr *logger.LogrusLogger) telegram.Storage {
 	return &db{
 		collections: database.Collection(collection),
+		lgr:         lgr,
 	}
 }
 
@@ -76,9 +83,9 @@ func (d *db) Update(ctx context.Context, user models.User) error {
 	if err != nil {
 		return err
 	}
-	delete(updateUserObj, "chat_id")
-	delete(updateUserObj, "lon")
-	delete(updateUserObj, "lat")
+	delete(updateUserObj, chatId)
+	delete(updateUserObj, lon)
+	delete(updateUserObj, lat)
 
 	update := bson.M{
 		"$set": updateUserObj,
@@ -98,6 +105,7 @@ func (d *db) Update(ctx context.Context, user models.User) error {
 
 func (d *db) Delete(ctx context.Context, chatId int64) (int64, error) {
 	filter := bson.M{"chat_id": chatId}
+
 	result, err := d.collections.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

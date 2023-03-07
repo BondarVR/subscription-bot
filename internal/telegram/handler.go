@@ -17,7 +17,7 @@ func ParseTime(time string) models.Time {
 }
 
 func TimeForTicker() models.Time {
-	time := time.Now().Format("15:04:05")
+	time := time.Now().Format(layoutOfTime)
 	result := ParseTime(time)
 	return result
 }
