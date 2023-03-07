@@ -2,10 +2,12 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"subscription-bot/internal/logger"
+	"subscription-bot/internal/models"
 	"subscription-bot/internal/telegram"
 )
 
@@ -14,14 +16,13 @@ type db struct {
 	lgr         *logger.LogrusLogger
 }
 
-func NewStorage(database *mongo.Database, collection string, lgr *logger.LogrusLogger) telegram.Storage {
+func NewStorage(database *mongo.Database, collection string) telegram.Storage {
 	return &db{
 		collections: database.Collection(collection),
-		lgr:         lgr,
 	}
 }
 
-func (d *db) Create(ctx context.Context, user telegram.User) (string, error) {
+func (d *db) Create(ctx context.Context, user models.User) (string, error) {
 	result, err := d.collections.InsertOne(ctx, user)
 	if err != nil {
 		return "", err
@@ -30,15 +31,15 @@ func (d *db) Create(ctx context.Context, user telegram.User) (string, error) {
 	if ok {
 		return oid.Hex(), nil
 	}
-	return "user is create", err
+	return "", fmt.Errorf("failed to conver objectid to hex")
 }
 
-func (d *db) FindOneByID(ctx context.Context, chatId int64) (u telegram.User, err error) {
+func (d *db) FindOneByID(ctx context.Context, chatId int64) (u models.User, err error) {
 	filter := bson.M{"chat_id": chatId}
 
 	result := d.collections.FindOne(ctx, filter)
 	if result.Err() != nil {
-		return u, err
+		return u, fmt.Errorf("do not find user by ID")
 	}
 
 	if err := result.Decode(&u); err != nil {
@@ -48,12 +49,12 @@ func (d *db) FindOneByID(ctx context.Context, chatId int64) (u telegram.User, er
 	return u, nil
 }
 
-func (d *db) FindOneByTime(ctx context.Context, time telegram.Time) (u telegram.User, err error) {
+func (d *db) FindOneByTime(ctx context.Context, time models.Time) (u models.User, err error) {
 	filter := bson.M{"time": time}
 
 	result := d.collections.FindOne(ctx, filter)
 	if result.Err() != nil {
-		return u, err
+		return u, fmt.Errorf("do not find user by Time")
 	}
 	if err := result.Decode(&u); err != nil {
 		return u, err
@@ -62,7 +63,7 @@ func (d *db) FindOneByTime(ctx context.Context, time telegram.Time) (u telegram.
 	return u, nil
 }
 
-func (d *db) Update(ctx context.Context, user telegram.User) error {
+func (d *db) Update(ctx context.Context, user models.User) error {
 	filter := bson.M{"chat_id": user.ChatID}
 
 	userBytes, err := bson.Marshal(user)
@@ -89,8 +90,20 @@ func (d *db) Update(ctx context.Context, user telegram.User) error {
 	}
 
 	if result.MatchedCount == 0 {
-		return err
+		return fmt.Errorf("user is not update")
 	}
 
 	return nil
+}
+
+func (d *db) Delete(ctx context.Context, chatId int64) (int64, error) {
+	filter := bson.M{"chat_id": chatId}
+	result, err := d.collections.DeleteOne(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+	if result.DeletedCount == 0 {
+		return 0, fmt.Errorf("can not delete user by chatId")
+	}
+	return result.DeletedCount, nil
 }

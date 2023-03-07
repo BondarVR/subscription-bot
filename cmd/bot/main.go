@@ -22,11 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	lgr, err := logger.New(logger.Config{
-		LogServer:   cfg.LogServer,
-		LogLevel:    cfg.Loglevel,
-		ServiceName: cfg.ServiceName,
-	})
+	lgr, err := logger.New(cfg)
 	if err != nil {
 		lgr.Fatal(err)
 	}
@@ -46,9 +42,9 @@ func main() {
 	if err != nil {
 		lgr.Fatal(err)
 	}
-	lgr.Infof("DB is start. Name: %s", client.Name())
+	lgr.Infof("DB is start. Name: (%s)", client.Name())
 
-	storage := db.NewStorage(client, cfg.DbCollections, lgr)
+	storage := db.NewStorage(client, cfg.DbCollections)
 
 	bot, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
@@ -57,7 +53,7 @@ func main() {
 
 	bot.Debug = true
 
-	telegramBot := telegram.NewBot(bot, cfg, lgr, storage, wg)
+	telegramBot := telegram.NewBot(bot, cfg, lgr, storage)
 	if err := telegramBot.StartBotAndTicker(); err != nil {
 		lgr.Fatal(err)
 	}

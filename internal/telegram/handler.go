@@ -2,12 +2,13 @@ package telegram
 
 import (
 	"strings"
+	"subscription-bot/internal/models"
 	"time"
 )
 
-func ParseTime(time string) Time {
+func ParseTime(time string) models.Time {
 	arrTime := strings.Split(time, ":")
-	structTime := Time{
+	structTime := models.Time{
 		Hour:    arrTime[0],
 		Minutes: arrTime[1],
 		Second:  "00",
@@ -15,7 +16,7 @@ func ParseTime(time string) Time {
 	return structTime
 }
 
-func TimeForTicker() Time {
+func TimeForTicker() models.Time {
 	time := time.Now().Format("15:04:05")
 	result := ParseTime(time)
 	return result

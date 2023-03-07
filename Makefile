@@ -12,10 +12,6 @@ format:
 	go vet ./...
 	go fmt ./...
 
-gen:
-	mockgen -source=internal/telegram/storage.go \
-	-destination=internal/telegram/mocks/mock_storage.go
-
 test:
 	go test -v -count=1 ./...
 

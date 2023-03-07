@@ -22,11 +22,15 @@ type Config struct {
 	NameDatabase  string `env:"MONGO_DB"`
 	MongoPassword string `env:"MONGO_PASSWORD"`
 
+	TestDB           string `env:"TEST_DB"`
+	TestDBCollection string `env:"TEST_DB_COLLECTION"`
+	TestDBURI        string `env:"TEST_DB_URI"`
+
 	DbCollections string `env:"DB_COLLECTIONS"`
 }
 
 func NewConfig() (*Config, error) {
-	err := godotenv.Load()
+	err := godotenv.Load("/Users/9.karat/GolandProjects/task-2.5-subscription-bot/.env")
 	if err != nil {
 		return nil, err
 	}

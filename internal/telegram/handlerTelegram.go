@@ -2,8 +2,10 @@ package telegram
 
 import (
 	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pkg/errors"
+	"subscription-bot/internal/models"
 	"time"
 )
 
@@ -94,11 +96,11 @@ func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
 }
 
 func (b *Bot) handleLocation(message *tgbotapi.Message) error {
-	user := User{
+	user := models.User{
 		ChatID: int64(message.Chat.ID),
 		Lon:    message.Location.Longitude,
 		Lat:    message.Location.Latitude,
-		Time: Time{
+		Time: models.Time{
 			Hour:    "00",
 			Minutes: "00",
 			Second:  "00",
@@ -121,18 +123,17 @@ func (b *Bot) handleLocation(message *tgbotapi.Message) error {
 func (b *Bot) handleTimeFromText(message *tgbotapi.Message) (string, error) {
 	_, err := time.Parse(layout, message.Text)
 	if err != nil {
-		return errTimeText, err
+		return errTimeText, fmt.Errorf("can not parse time")
 	} else {
 		time := ParseTime(message.Text)
-
-		user := User{
+		user := models.User{
 			ChatID: int64(message.Chat.ID),
-			Time:   time}
-
+			Time:   time,
+		}
 		err = b.storage.Update(context.Background(), user)
 		if err != nil {
 			return "", err
 		}
 	}
-	return timeText, err
+	return timeText, nil
 }

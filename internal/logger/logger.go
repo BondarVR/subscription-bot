@@ -3,6 +3,7 @@ package logger
 import (
 	graylog "github.com/gemnasium/logrus-graylog-hook"
 	logrus "github.com/sirupsen/logrus"
+	"subscription-bot/internal/config"
 	"time"
 )
 
@@ -11,12 +12,6 @@ type Logger interface {
 	Fatal(args ...interface{})
 	Infof(format string, args ...interface{})
 	Fatalf(format string, args ...interface{})
-}
-
-type Config struct {
-	LogLevel    string
-	LogServer   string
-	ServiceName string
 }
 
 type LogrusLogger struct {
@@ -40,8 +35,8 @@ func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
 	l.entry.Fatalf(format, args...)
 }
 
-func New(cfg Config) (*LogrusLogger, error) {
-	level, err := logrus.ParseLevel(cfg.LogLevel)
+func New(cfg *config.Config) (*LogrusLogger, error) {
+	level, err := logrus.ParseLevel(cfg.Loglevel)
 	if err != nil {
 		return nil, err
 	}
